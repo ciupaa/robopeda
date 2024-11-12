@@ -30,10 +30,11 @@ public class TeleOpCiupa extends LinearOpMode {
 
 
     final double ARM_TICKS_PER_DEGREE =
-            3.5 // number of encoder ticks per rotation of the bare motor
-                    * 188.0 // This is the exact gear ratio of the 50.9:1 Yellow Jacket gearbox
-                    * 2.4 // This is the external gear reduction, a 20T pinion gear that drives a 100T hub-mount gear
-                    * 360.0; // we want ticks per degree, not per rotation
+            1440 // number of encoder ticks per rotation of the bare motor
+                    * 60.0 // This is the exact gear ratio of the 60:1 TETRIX motor
+                    * 32.0 / 16.0 // This is the external gear reduction, a 16T sprocket driving a 32T sprocket
+                    * 1/360.0; // we want ticks per degree, not per rotation
+
     final double SLIDE_TICKS_PER_DEGREE =
             28 // number of encoder ticks per rotation of the bare motor
                     * 19.2 // internal gear reduction of the 435 RPM Yellow Jacket motor
@@ -151,7 +152,8 @@ public class TeleOpCiupa extends LinearOpMode {
         /* Run until the driver presses stop */
         while (opModeIsActive())
 
-        {  double y = gamepad1.right_trigger;
+        {
+            double y = gamepad1.right_trigger;
             double yx = gamepad1.left_trigger;
             double x = gamepad1.left_stick_x;
             double rx = gamepad1.right_stick_x;
@@ -183,7 +185,6 @@ public class TeleOpCiupa extends LinearOpMode {
             spate_stanga.setPower(backLeftPower);
             fata_dreapta.setPower(frontRightPower);
             spate_dreapta.setPower(backRightPower);
-
 
             armPositionFudgeFactor = FUDGE_FACTOR * (gamepad2.right_trigger + (-gamepad2.left_trigger));
             slidesPositionFudgeFactor = SLIDES_FUDGE_FACTOR * (gamepad2.left_stick_x);
