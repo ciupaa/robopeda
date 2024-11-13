@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-//import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -14,9 +14,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
 
-@TeleOp(name = "TeleOp Ciupa", group = "Robot")
+@TeleOp(name = "TeleOpCiupa9", group = "Robot")
 //@Disabled
-public class TeleOpCiupa extends LinearOpMode {
+public class TeleOpCiupa9 extends LinearOpMode {
 
     /* Declare OpMode members. */
     public DcMotor  fata_stanga   = null; //the left drivetrain motor
@@ -35,14 +35,6 @@ public class TeleOpCiupa extends LinearOpMode {
                     * 32.0 / 16.0 // This is the external gear reduction, a 16T sprocket driving a 32T sprocket
                     * 1/360.0; // we want ticks per degree, not per rotation
 
-    final double SLIDE_TICKS_PER_DEGREE =
-            28 // number of encoder ticks per rotation of the bare motor
-                    * 19.2 // internal gear reduction of the 435 RPM Yellow Jacket motor
-                    * 1.0 // external pulley-belt system, no additional reduction
-                    / 360.0; // we want ticks per degree, not per rotation
-
-
-
     final double servoRetras = 0;
     final double servoTras = 1;
 
@@ -51,27 +43,31 @@ public class TeleOpCiupa extends LinearOpMode {
     final double cleste_inchis  = 1;
 
     /* A number in degrees that the triggers can adjust the arm position by */
-    final double FUDGE_FACTOR = 15 * ARM_TICKS_PER_DEGREE;
-    final double SLIDES_FUDGE_FACTOR = 15 * SLIDE_TICKS_PER_DEGREE;
-    final double SLIDES_COLLAPSED_INTO_ROBOT = 0;
+
     final double ARM_COLLAPSED_INTO_ROBOT  = 0;
 
     /* Variables that are used to set the arm to a specific position */
+    final double FUDGE_FACTOR = 15 * ARM_TICKS_PER_DEGREE;
+
     double armPosition = (int)ARM_COLLAPSED_INTO_ROBOT;
-    double slidesPosition = (int) SLIDES_COLLAPSED_INTO_ROBOT;
-    double slidesPositionFudgeFactor;
     double armPositionFudgeFactor;
+
+    final double LIFT_TICKS_PER_MM = (111132.0 / 289.0) / 120.0;
 
     double rotire = gamepad2.right_stick_y;
 
 
-    final double cosSusGlisiere= 480 * SLIDE_TICKS_PER_DEGREE;
+    final double cosSusGlisiere= 480 * LIFT_TICKS_PER_MM;
     final double cosSusBrat = 200 * ARM_TICKS_PER_DEGREE;
-    final double cosJosGlisiere = 160 * SLIDE_TICKS_PER_DEGREE;
+    final double cosJosGlisiere = 160 * LIFT_TICKS_PER_MM;
     final double cosJosBrat = 200 * ARM_TICKS_PER_DEGREE;
     final double SpecimenBrat = 200 * ARM_TICKS_PER_DEGREE;
-    final double SpecimenGlisiere = 100 * SLIDE_TICKS_PER_DEGREE;
+    final double SpecimenGlisiere = 100 * LIFT_TICKS_PER_MM;
+    final double LIFT_COLLAPSED = 0 * LIFT_TICKS_PER_MM;
+    final double LIFT_SCORING_IN_LOW_BASKET = 0 * LIFT_TICKS_PER_MM;
+    final double LIFT_SCORING_IN_HIGH_BASKET = 480 * LIFT_TICKS_PER_MM;
 
+    double liftPosition = LIFT_COLLAPSED;
     double cycletime = 0;
     double looptime = 0;
     double oldtime = 0;
@@ -111,8 +107,6 @@ public class TeleOpCiupa extends LinearOpMode {
 
         /*This sets the maximum current that the control hub will apply to the arm before throwing a flag */
         ((DcMotorEx) motor_stanga).setCurrentAlert(5,CurrentUnit.AMPS);
-        ((DcMotorEx) motor_glisiere).setCurrentAlert(5,CurrentUnit.AMPS);
-
 
         /* Before starting the motor_stanga. We'll make sure the TargetPosition is set to 0.
         Then we'll set the RunMode to RUN_TO_POSITION. And we'll ask it to stop and reset encoder.
@@ -121,6 +115,7 @@ public class TeleOpCiupa extends LinearOpMode {
         motor_stanga.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         motor_stanga.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
+        motor_glisiere.setDirection(DcMotorSimple.Direction.REVERSE);
         motor_glisiere.setTargetPosition(0);
         motor_glisiere.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         motor_glisiere.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -187,7 +182,6 @@ public class TeleOpCiupa extends LinearOpMode {
             spate_dreapta.setPower(backRightPower);
 
             armPositionFudgeFactor = FUDGE_FACTOR * (gamepad2.right_trigger + (-gamepad2.left_trigger));
-            slidesPositionFudgeFactor = SLIDES_FUDGE_FACTOR * (gamepad2.left_stick_x);
             servoRotire.setPower(rotire);
             /* Here we implement a set of if else statements to set our arm to different scoring positions.
             We check to see if a specific button is pressed, and then move the arm (and sometimes
@@ -210,47 +204,34 @@ public class TeleOpCiupa extends LinearOpMode {
 
             if(gamepad2.dpad_up) {
                 motor_stanga.setPower(cosSusBrat);
-                motor_glisiere.setPower(cosSusGlisiere);
+                motor_glisiere.setPower(LIFT_SCORING_IN_HIGH_BASKET);
             }
             if(gamepad2.dpad_down) {
-                motor_glisiere.setPower(cosJosGlisiere);
+                motor_glisiere.setPower(LIFT_SCORING_IN_LOW_BASKET);
                 motor_stanga.setPower(cosJosBrat);
             }
             if(gamepad2.dpad_right) {
-                motor_glisiere.setPower(SpecimenGlisiere);
+                motor_glisiere.setPower(LIFT_SCORING_IN_LOW_BASKET);
                 motor_stanga.setPower(SpecimenBrat);
             }
 
 
             if (armPosition < 45 * ARM_TICKS_PER_DEGREE){
-                armLiftComp = (0.25568 * slidesPosition);
+                armLiftComp = (0.25568 * liftPosition);
             }
             else{
                 armLiftComp = 0;
             }
-
-
             motor_stanga.setTargetPosition((int) (armPosition + armPositionFudgeFactor + armLiftComp));
-            motor_glisiere.setTargetPosition((int) (slidesPosition + slidesPositionFudgeFactor));
-
 
             ((DcMotorEx) motor_stanga).setVelocity(2100);// Velocity inseamna viteaza maxima
             motor_stanga.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            ((DcMotorEx) motor_glisiere).setVelocity(2100);
-            motor_glisiere.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-
-            if (slidesPositionFudgeFactor > 180 * SLIDE_TICKS_PER_DEGREE)
-                slidesPositionFudgeFactor = 180 * SLIDE_TICKS_PER_DEGREE ;
-            if ( slidesPositionFudgeFactor < 0 * SLIDE_TICKS_PER_DEGREE )
-                slidesPositionFudgeFactor = 0 * SLIDE_TICKS_PER_DEGREE;
 
             if (armPositionFudgeFactor > 180 * ARM_TICKS_PER_DEGREE)
                 armPositionFudgeFactor = 180 * ARM_TICKS_PER_DEGREE ;
             if ( armPositionFudgeFactor < 0 * ARM_TICKS_PER_DEGREE )
                 armPositionFudgeFactor = 0 * ARM_TICKS_PER_DEGREE;
 
-            motor_glisiere.setTargetPosition((int) (slidesPosition + slidesPositionFudgeFactor));
             motor_stanga.setTargetPosition((int) (armPosition + armPositionFudgeFactor));
 
 
@@ -271,7 +252,7 @@ public class TeleOpCiupa extends LinearOpMode {
             /* send telemetry to the driver of the arm's current position and target position */
             telemetry.addData("arm Target Position: ", motor_stanga.getTargetPosition());
             telemetry.addData("arm Encoder: ", motor_stanga.getCurrentPosition());
-            telemetry.addData("lift variable", slidesPosition);
+            telemetry.addData("lift variable", liftPosition);
             telemetry.addData("Lift Target Position",motor_glisiere.getTargetPosition());
             telemetry.addData("lift current position", motor_glisiere.getCurrentPosition());
             telemetry.addData("motor_glisiere Current:",((DcMotorEx) motor_glisiere).getCurrent(CurrentUnit.AMPS));
