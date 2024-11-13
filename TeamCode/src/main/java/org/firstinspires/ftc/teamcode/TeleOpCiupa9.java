@@ -30,9 +30,9 @@ public class TeleOpCiupa9 extends LinearOpMode {
 
 
     final double ARM_TICKS_PER_DEGREE =
-            1440 // number of encoder ticks per rotation of the bare motor
-                    * 60.0 // This is the exact gear ratio of the 60:1 TETRIX motor
-                    * 32.0 / 16.0 // This is the external gear reduction, a 16T sprocket driving a 32T sprocket
+            28 // number of encoder ticks per rotation of the bare motor
+                    * 99.5 // This is the exact gear ratio of the gobilda 60rpm motor
+                    * 10 // This is the external gear reduction
                     * 1/360.0; // we want ticks per degree, not per rotation
 
     final double servoRetras = 0;
