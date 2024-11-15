@@ -35,8 +35,15 @@ public class TeleOpCiupa9 extends LinearOpMode {
                     * 10 // This is the external gear reduction
                     * 1/360.0; // we want ticks per degree, not per rotation
 
+
+    final double ARM_COLLAPSED_INTO_ROBOT  = 0;
+    final double cosSusBrat = 100 * ARM_TICKS_PER_DEGREE;
+    final double cosJosBrat = 90 * ARM_TICKS_PER_DEGREE;
+    final double SpecimenBrat = 90 * ARM_TICKS_PER_DEGREE;
+    final double Hang = 110 * ARM_TICKS_PER_DEGREE;
+
     final double servoRetras = 0;
-    final double servoTras = 1;
+    final double servoTras = 0;
 
     /* Variables to store the positions that the cleste should be set to when folding in, or folding out. */
     final double cleste_deschis   = 0.7;
@@ -44,30 +51,27 @@ public class TeleOpCiupa9 extends LinearOpMode {
 
     /* A number in degrees that the triggers can adjust the arm position by */
 
-    final double ARM_COLLAPSED_INTO_ROBOT  = 0;
 
     /* Variables that are used to set the arm to a specific position */
     final double FUDGE_FACTOR = 15 * ARM_TICKS_PER_DEGREE;
 
+
     double armPosition = (int)ARM_COLLAPSED_INTO_ROBOT;
     double armPositionFudgeFactor;
 
+
+    double rotirePosition = (int)servoTras;
+
+
+
     final double LIFT_TICKS_PER_MM = (111132.0 / 289.0) / 120.0;
 
-    double rotire = gamepad2.right_stick_y;
-
-
-    final double cosSusGlisiere= 480 * LIFT_TICKS_PER_MM;
-    final double cosSusBrat = 200 * ARM_TICKS_PER_DEGREE;
-    final double cosJosGlisiere = 160 * LIFT_TICKS_PER_MM;
-    final double cosJosBrat = 200 * ARM_TICKS_PER_DEGREE;
-    final double SpecimenBrat = 200 * ARM_TICKS_PER_DEGREE;
-    final double SpecimenGlisiere = 100 * LIFT_TICKS_PER_MM;
     final double LIFT_COLLAPSED = 0 * LIFT_TICKS_PER_MM;
     final double LIFT_SCORING_IN_LOW_BASKET = 0 * LIFT_TICKS_PER_MM;
     final double LIFT_SCORING_IN_HIGH_BASKET = 480 * LIFT_TICKS_PER_MM;
-
     double liftPosition = LIFT_COLLAPSED;
+
+
     double cycletime = 0;
     double looptime = 0;
     double oldtime = 0;
@@ -79,12 +83,12 @@ public class TeleOpCiupa9 extends LinearOpMode {
     public void runOpMode() {
 
         /* Define and Initialize Motors */
-        fata_stanga  = hardwareMap.dcMotor.get("fata_stanga");
+        fata_stanga    = hardwareMap.dcMotor.get("fata_stanga");
         spate_stanga   = hardwareMap.dcMotor.get("spate_stanga");
-        fata_dreapta = hardwareMap.dcMotor.get("fata_dreapta");
+        fata_dreapta   = hardwareMap.dcMotor.get("fata_dreapta");
         spate_dreapta  = hardwareMap.dcMotor.get("spate_dreapta");
-        motor_glisiere       = hardwareMap.dcMotor.get("motor_glisiere");
-        motor_stanga        = hardwareMap.get(DcMotor.class, "motor_stanga"); //the arm motor
+        motor_glisiere = hardwareMap.dcMotor.get("motor_glisiere");
+        motor_stanga   = hardwareMap.get(DcMotor.class, "motor_stanga"); //the arm motor
 
 
        /*
@@ -125,7 +129,9 @@ public class TeleOpCiupa9 extends LinearOpMode {
         cleste  = hardwareMap.get(Servo.class, "cleste");
 
         /* Make sure that the servoRotire is off, and the cleste is folded in. */
-        servoRotire.setPower(servoRetras);
+        servoRotire.setPower(rotirePosition);
+
+
         cleste.setPosition(cleste_inchis);
 
 
@@ -167,6 +173,8 @@ public class TeleOpCiupa9 extends LinearOpMode {
             double rotY = (x * Math.sin(-botHeading)) + (y * Math.cos(-botHeading));
             double rotYX = x * Math.sin(-botHeading) + yx * Math.cos(-botHeading);
 
+            rotX = rotX *1.1;
+
             // Denominator is the largest motor power (absolute value) or 1
             // This ensures all the powers maintain the same ratio,
             // but only if at least one is out of the range [-1, 1]
@@ -181,8 +189,6 @@ public class TeleOpCiupa9 extends LinearOpMode {
             fata_dreapta.setPower(frontRightPower);
             spate_dreapta.setPower(backRightPower);
 
-            armPositionFudgeFactor = FUDGE_FACTOR * (gamepad2.right_trigger + (-gamepad2.left_trigger));
-            servoRotire.setPower(rotire);
             /* Here we implement a set of if else statements to set our arm to different scoring positions.
             We check to see if a specific button is pressed, and then move the arm (and sometimes
             servoRotire and cleste) to match. For example, if we click the right bumper we want the robot
@@ -202,6 +208,13 @@ public class TeleOpCiupa9 extends LinearOpMode {
             else if (gamepad2.b)
                 servoRotire.setPower(servoRetras);
 
+
+
+            armPositionFudgeFactor = FUDGE_FACTOR * (gamepad2.right_trigger + (-gamepad2.left_trigger));
+
+
+
+
             if(gamepad2.dpad_up) {
                 motor_stanga.setPower(cosSusBrat);
                 motor_glisiere.setPower(LIFT_SCORING_IN_HIGH_BASKET);
@@ -216,32 +229,53 @@ public class TeleOpCiupa9 extends LinearOpMode {
             }
 
 
+
+
             if (armPosition < 45 * ARM_TICKS_PER_DEGREE){
                 armLiftComp = (0.25568 * liftPosition);
             }
             else{
                 armLiftComp = 0;
             }
+
+
+
             motor_stanga.setTargetPosition((int) (armPosition + armPositionFudgeFactor + armLiftComp));
 
-            ((DcMotorEx) motor_stanga).setVelocity(2100);// Velocity inseamna viteaza maxima
+
+            ((DcMotorEx) motor_stanga).setVelocity(3500);// Velocity inseamna viteaza maxima
             motor_stanga.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-            if (armPositionFudgeFactor > 180 * ARM_TICKS_PER_DEGREE)
-                armPositionFudgeFactor = 180 * ARM_TICKS_PER_DEGREE ;
-            if ( armPositionFudgeFactor < 0 * ARM_TICKS_PER_DEGREE )
-                armPositionFudgeFactor = 0 * ARM_TICKS_PER_DEGREE;
-
-            motor_stanga.setTargetPosition((int) (armPosition + armPositionFudgeFactor));
-
 
             /* Check to see if our arm is over the current limit, and report via telemetry. */
             if (((DcMotorEx) motor_stanga).isOverCurrent()){
                 telemetry.addLine("BRAT EXCEEDED CURRENT LIMIT!");
             }
-            if (((DcMotorEx) motor_glisiere).isOverCurrent()){
-                telemetry.addLine("GLISIERE EXCEEDED CURRENT LIMIT!");
+
+
+
+            if (gamepad2.right_bumper) {
+                liftPosition += 2800 * cycletime;
             }
+            else if (gamepad2.left_bumper) {
+                liftPosition -= 2800 * cycletime;
+            }
+
+
+            if (liftPosition > LIFT_SCORING_IN_HIGH_BASKET) {
+                liftPosition = LIFT_SCORING_IN_HIGH_BASKET;
+            }
+            else if (liftPosition < 0) {
+                liftPosition = 0;
+            }
+
+
+            motor_glisiere.setTargetPosition((int) (liftPosition));
+
+            ((DcMotorEx) motor_glisiere).setVelocity(2100);
+            motor_glisiere.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+
+            servoRotire.setPower(-gamepad2.left_stick_y);
 
 
             looptime = getRuntime();
