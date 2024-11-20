@@ -41,6 +41,7 @@ public class TeleOpCiupa9 extends LinearOpMode {
     final double cosJosBrat = 90 * ARM_TICKS_PER_DEGREE;
     final double SpecimenBrat = 90 * ARM_TICKS_PER_DEGREE;
     final double Hang = 110 * ARM_TICKS_PER_DEGREE;
+    final double test = 10 * ARM_TICKS_PER_DEGREE;
 
     final double servoRetras = 0;
     final double servoTras = 0;
@@ -63,8 +64,8 @@ public class TeleOpCiupa9 extends LinearOpMode {
     double rotirePosition = (int)servoTras;
 
 
+    final double LIFT_TICKS_PER_MM = (7363.2 / 72.0);
 
-    final double LIFT_TICKS_PER_MM = (111132.0 / 289.0) / 120.0;
 
     final double LIFT_COLLAPSED = 0 * LIFT_TICKS_PER_MM;
     final double LIFT_SCORING_IN_LOW_BASKET = 0 * LIFT_TICKS_PER_MM;
@@ -154,10 +155,10 @@ public class TeleOpCiupa9 extends LinearOpMode {
         while (opModeIsActive())
 
         {
-            double y = gamepad1.right_trigger;
-            double yx = gamepad1.left_trigger;
+            double y = -gamepad1.left_stick_y; // Remember, Y stick value is reversed
             double x = gamepad1.left_stick_x;
             double rx = gamepad1.right_stick_x;
+
 
             // This button choice was made so that it is hard to hit on accident,
             // it can be freely changed based on preference.
@@ -170,19 +171,18 @@ public class TeleOpCiupa9 extends LinearOpMode {
 
             // Rotate the movement direction counter to the bot's rotation
             double rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);
-            double rotY = (x * Math.sin(-botHeading)) + (y * Math.cos(-botHeading));
-            double rotYX = x * Math.sin(-botHeading) + yx * Math.cos(-botHeading);
+            double rotY = x * Math.sin(-botHeading) + y * Math.cos(-botHeading);
 
-            rotX = rotX *1.1;
+            rotX = rotX * 1.15;  // Counteract imperfect strafing
 
             // Denominator is the largest motor power (absolute value) or 1
             // This ensures all the powers maintain the same ratio,
             // but only if at least one is out of the range [-1, 1]
-            double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rx), 1.5);
-            double frontLeftPower = (rotY - rotYX + rotX + rx ) / denominator / 1.5;
-            double backLeftPower = (rotY - rotYX - rotX + rx) / denominator / 1.5;
-            double frontRightPower = (rotY - rotYX - rotX - rx) / denominator /1.5;
-            double backRightPower = (rotY - rotYX + x+  rotX - rx) / denominator/ 1.5 ;
+            double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rx), 2.2);
+            double frontLeftPower = (rotY + rotX + rx) / denominator;
+            double backLeftPower = (rotY - rotX + rx) / denominator;
+            double frontRightPower = (rotY - rotX - rx) / denominator;
+            double backRightPower = (rotY + rotX - rx) / denominator;
 
             fata_stanga.setPower(frontLeftPower);
             spate_stanga.setPower(backLeftPower);
@@ -207,6 +207,9 @@ public class TeleOpCiupa9 extends LinearOpMode {
                 servoRotire.setPower(servoTras);
             else if (gamepad2.b)
                 servoRotire.setPower(servoRetras);
+
+            if(gamepad2.dpad_left)
+                motor_stanga.setPower(test);
 
 
 
@@ -254,10 +257,10 @@ public class TeleOpCiupa9 extends LinearOpMode {
 
 
             if (gamepad2.right_bumper) {
-                liftPosition += 2800 * cycletime;
+                liftPosition += 50 * cycletime;
             }
             else if (gamepad2.left_bumper) {
-                liftPosition -= 2800 * cycletime;
+                liftPosition -= 50 * cycletime;
             }
 
 
