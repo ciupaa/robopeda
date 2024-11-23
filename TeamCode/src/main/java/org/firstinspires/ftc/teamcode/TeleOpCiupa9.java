@@ -64,13 +64,14 @@ public class TeleOpCiupa9 extends LinearOpMode {
     double rotirePosition = (int)servoTras;
 
 
-    final double LIFT_TICKS_PER_MM = (7363.2 / 72.0);
-
+    final double LIFT_TICKS_PER_MM = 384.5 / 120.0; // Encoder ticks per mm for your specific motor and pulley setup
 
     final double LIFT_COLLAPSED = 0 * LIFT_TICKS_PER_MM;
     final double LIFT_SCORING_IN_LOW_BASKET = 0 * LIFT_TICKS_PER_MM;
-    final double LIFT_SCORING_IN_HIGH_BASKET = 480 * LIFT_TICKS_PER_MM;
+    final double LIFT_SCORING_IN_HIGH_BASKET = 348 * LIFT_TICKS_PER_MM;
     double liftPosition = LIFT_COLLAPSED;
+
+    final double LIFT_MAX_POSITION = (int) (348 * LIFT_TICKS_PER_MM); // Fully extended for 240mm slide
 
 
     double cycletime = 0;
@@ -232,50 +233,59 @@ public class TeleOpCiupa9 extends LinearOpMode {
             }
 
 
-
-
-            if (armPosition < 45 * ARM_TICKS_PER_DEGREE){
+// Apply lift compensation when arm is below 45 degrees
+            if (armPosition < 45 * ARM_TICKS_PER_DEGREE) {
                 armLiftComp = (0.25568 * liftPosition);
-            }
-            else{
+            } else {
                 armLiftComp = 0;
             }
 
+// Apply position limits
+            if (armPosition > 250 * ARM_TICKS_PER_DEGREE) {
+                armPosition = 250 * ARM_TICKS_PER_DEGREE; // Clamp to max position
+            } else if (armPosition < ARM_COLLAPSED_INTO_ROBOT) {
+                armPosition = ARM_COLLAPSED_INTO_ROBOT; // Clamp to min position
+            }
 
-
+// Set target position for the motor
             motor_stanga.setTargetPosition((int) (armPosition + armPositionFudgeFactor + armLiftComp));
 
+// Set motor velocity (max speed)
+            ((DcMotorEx) motor_stanga).setVelocity(3500); // Maximum velocity
 
-            ((DcMotorEx) motor_stanga).setVelocity(3500);// Velocity inseamna viteaza maxima
+// Set motor mode
             motor_stanga.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            /* Check to see if our arm is over the current limit, and report via telemetry. */
-            if (((DcMotorEx) motor_stanga).isOverCurrent()){
+// Check for overcurrent condition and report via telemetry
+            if (((DcMotorEx) motor_stanga).isOverCurrent()) {
                 telemetry.addLine("BRAT EXCEEDED CURRENT LIMIT!");
             }
 
 
-
+// Update lift position based on driver input
             if (gamepad2.right_bumper) {
-                liftPosition += 50 * cycletime;
-            }
-            else if (gamepad2.left_bumper) {
-                liftPosition -= 50 * cycletime;
-            }
-
-
-            if (liftPosition > LIFT_SCORING_IN_HIGH_BASKET) {
-                liftPosition = LIFT_SCORING_IN_HIGH_BASKET;
-            }
-            else if (liftPosition < 0) {
-                liftPosition = 0;
+                liftPosition += 2800 * cycletime; // Increased for faster movement
+            } else if (gamepad2.left_bumper) {
+                liftPosition -= 2800 * cycletime; // Increased for faster movement
             }
 
+// Enforce limits
+            // Enforce limits
+            if (liftPosition > LIFT_MAX_POSITION) {
+                liftPosition = LIFT_MAX_POSITION;
+            }
+            if (liftPosition < LIFT_COLLAPSED) {
+                liftPosition = LIFT_COLLAPSED;
+            }
 
-            motor_glisiere.setTargetPosition((int) (liftPosition));
 
-            ((DcMotorEx) motor_glisiere).setVelocity(2100);
-            motor_glisiere.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+// Set motor mode and target position
+            motor_glisiere.setMode(DcMotor.RunMode.RUN_TO_POSITION); // Ensure it's in the correct mode
+            motor_glisiere.setTargetPosition((int) liftPosition);
+
+// Set motor velocity (ticks per second)
+            ((DcMotorEx) motor_glisiere).setVelocity(2800); // Adjust for desired speed
 
 
             servoRotire.setPower(-gamepad2.left_stick_y);
