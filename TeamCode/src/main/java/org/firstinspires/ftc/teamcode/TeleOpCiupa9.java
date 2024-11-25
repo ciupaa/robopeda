@@ -44,7 +44,8 @@ public class TeleOpCiupa9 extends LinearOpMode {
     final double test = 10 * ARM_TICKS_PER_DEGREE;
 
     final double servoRetras = 0;
-    final double servoTras = 0;
+    final double servoTras = 1;
+    final double cleste_score = 0.5;
 
     /* Variables to store the positions that the cleste should be set to when folding in, or folding out. */
     final double cleste_deschis   = 0.7;
@@ -131,7 +132,7 @@ public class TeleOpCiupa9 extends LinearOpMode {
         cleste  = hardwareMap.get(Servo.class, "cleste");
 
         /* Make sure that the servoRotire is off, and the cleste is folded in. */
-        servoRotire.setPower(rotirePosition);
+      //  servoRotire.setPower(rotirePosition);
 
 
         cleste.setPosition(cleste_inchis);
@@ -209,8 +210,12 @@ public class TeleOpCiupa9 extends LinearOpMode {
             else if (gamepad2.b)
                 servoRotire.setPower(servoRetras);
 
-            if(gamepad2.dpad_left)
-                motor_stanga.setPower(test);
+            if(gamepad2.dpad_left) {
+                servoRotire.setPower(cleste_score);
+                sleep(100);
+                cleste.setPosition(cleste_deschis);
+
+            }
 
 
 
@@ -288,7 +293,7 @@ public class TeleOpCiupa9 extends LinearOpMode {
             ((DcMotorEx) motor_glisiere).setVelocity(2800); // Adjust for desired speed
 
 
-            servoRotire.setPower(-gamepad2.left_stick_y);
+            servoRotire.setPower(gamepad2.left_stick_y);
 
 
             looptime = getRuntime();
