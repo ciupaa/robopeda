@@ -25,7 +25,7 @@ public class TeleOpCiupa9 extends LinearOpMode {
     public DcMotor  spate_dreapta   = null;
     public DcMotor  motor_stanga         = null; //the arm motor
     public DcMotor  motor_glisiere        = null; //
-    public CRServo  servoRotire           = null; //the active servoRotire servo
+    public Servo  servoRotire           = null; //the active servoRotire servo
     public Servo    cleste            = null; //the cleste servo
 
 
@@ -43,13 +43,14 @@ public class TeleOpCiupa9 extends LinearOpMode {
     final double Hang = 110 * ARM_TICKS_PER_DEGREE;
     final double test = 10 * ARM_TICKS_PER_DEGREE;
 
-    final double servoRetras = 0;
-    final double servoTras = 1;
+    final double servoRetras = 0.4;
+    final double servoTras = 0.7;
     final double cleste_score = 0.5;
 
     /* Variables to store the positions that the cleste should be set to when folding in, or folding out. */
-    final double cleste_deschis   = 0.7;
-    final double cleste_inchis  = 1;
+    final double cleste_deschis   = 1;
+    final double cleste_inchis  = 0;
+
 
     /* A number in degrees that the triggers can adjust the arm position by */
 
@@ -62,7 +63,7 @@ public class TeleOpCiupa9 extends LinearOpMode {
     double armPositionFudgeFactor;
 
 
-    double rotirePosition = (int)servoTras;
+   // double rotirePosition = (int)servoTras;
 
 
     final double LIFT_TICKS_PER_MM = 384.5 / 120.0; // Encoder ticks per mm for your specific motor and pulley setup
@@ -86,10 +87,10 @@ public class TeleOpCiupa9 extends LinearOpMode {
     public void runOpMode() {
 
         /* Define and Initialize Motors */
-        DcMotor frontLeftMotor = hardwareMap.dcMotor.get("fata_stanga");
-        DcMotor backLeftMotor = hardwareMap.dcMotor.get("spate_stanga");
-        DcMotor frontRightMotor = hardwareMap.dcMotor.get("fata_dreapta");
-        DcMotor backRightMotor = hardwareMap.dcMotor.get("spate_dreapta");
+        fata_stanga   = hardwareMap.get(DcMotor.class, "fata_stanga"); //the arm motor
+        spate_stanga   = hardwareMap.get(DcMotor.class, "spate_stanga"); //the arm motor
+        fata_dreapta   = hardwareMap.get(DcMotor.class, "fata_dreapta"); //the arm motor
+        spate_dreapta   = hardwareMap.get(DcMotor.class, "spate_dreapta"); //the arm motor
         motor_glisiere = hardwareMap.dcMotor.get("motor_glisiere");
         motor_stanga   = hardwareMap.get(DcMotor.class, "motor_stanga"); //the arm motor
 
@@ -128,7 +129,7 @@ public class TeleOpCiupa9 extends LinearOpMode {
         motor_glisiere.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         /* Define and initialize servos.*/
-        servoRotire = hardwareMap.get(CRServo.class, "servoRotire");
+        servoRotire = hardwareMap.get(Servo.class, "servoRotire");
         cleste  = hardwareMap.get(Servo.class, "cleste");
 
         /* Make sure that the servoRotire is off, and the cleste is folded in. */
@@ -155,16 +156,16 @@ public class TeleOpCiupa9 extends LinearOpMode {
             // Denominator is the largest motor power (absolute value) or 1
             // This ensures all the powers maintain the same ratio,
             // but only if at least one is out of the range [-1, 1]
-            double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
+            double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 2.4);
             double frontLeftPower = (y + x + rx) / denominator;
             double backLeftPower = (y - x + rx) / denominator;
             double frontRightPower = (y - x - rx) / denominator;
             double backRightPower = (y + x - rx) / denominator;
 
-            frontLeftMotor.setPower(frontLeftPower);
-            backLeftMotor.setPower(backLeftPower);
-            frontRightMotor.setPower(frontRightPower);
-            backRightMotor.setPower(backRightPower);
+            fata_stanga.setPower(frontLeftPower);
+            spate_stanga.setPower(backLeftPower);
+            fata_dreapta.setPower(frontRightPower);
+            spate_dreapta.setPower(backRightPower);
 
             /* Here we implement a set of if else statements to set our arm to different scoring positions.
             We check to see if a specific button is pressed, and then move the arm (and sometimes
@@ -172,26 +173,15 @@ public class TeleOpCiupa9 extends LinearOpMode {
             to start collecting. So it moves the armPosition to the ARM_COLLECT position,
             it folds out the cleste to make sure it is in the correct orientation to servoRotire, and it
             turns the servoRotire on to the COLLECT mode.*/
-
-            if(gamepad2.a) {
+            if (gamepad2.a) {
                 cleste.setPosition(cleste_deschis);
             }
-            else if (gamepad2.x) {
+            else if (gamepad2.x)
                 cleste.setPosition(cleste_inchis);
-            }
-
-            if(gamepad2.y)
-                servoRotire.setPower(servoTras);
-            else if (gamepad2.b)
-                servoRotire.setPower(servoRetras);
-
-            if(gamepad2.dpad_left) {
-                servoRotire.setPower(cleste_score);
-                sleep(100);
-                cleste.setPosition(cleste_deschis);
-
-            }
-
+            if(gamepad2.b)
+                servoRotire.setPosition(servoRetras);
+            else if (gamepad2.y)
+                servoRotire.setPosition(servoTras);
 
 
             armPositionFudgeFactor = FUDGE_FACTOR * (gamepad2.right_trigger + (-gamepad2.left_trigger));
@@ -267,8 +257,6 @@ public class TeleOpCiupa9 extends LinearOpMode {
 // Set motor velocity (ticks per second)
             ((DcMotorEx) motor_glisiere).setVelocity(2800); // Adjust for desired speed
 
-
-            servoRotire.setPower(gamepad2.left_stick_y);
 
 
             looptime = getRuntime();
