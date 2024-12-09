@@ -156,7 +156,7 @@ public class TeleOpCiupa9 extends LinearOpMode {
             // Denominator is the largest motor power (absolute value) or 1
             // This ensures all the powers maintain the same ratio,
             // but only if at least one is out of the range [-1, 1]
-            double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 2.4);
+            double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 2.2);
             double frontLeftPower = (y + x + rx) / denominator;
             double backLeftPower = (y - x + rx) / denominator;
             double frontRightPower = (y - x - rx) / denominator;
@@ -182,8 +182,6 @@ public class TeleOpCiupa9 extends LinearOpMode {
                 servoRotire.setPosition(servoRetras);
             else if (gamepad2.y)
                 servoRotire.setPosition(servoTras);
-
-
             armPositionFudgeFactor = FUDGE_FACTOR * (gamepad2.right_trigger + (-gamepad2.left_trigger));
 
 
