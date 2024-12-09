@@ -119,10 +119,12 @@ public class TeleOpCiupa9 extends LinearOpMode {
         /* Before starting the motor_stanga. We'll make sure the TargetPosition is set to 0.
         Then we'll set the RunMode to RUN_TO_POSITION. And we'll ask it to stop and reset encoder.
         If you do not have the encoder plugged into this motor, it will not run in this code. */
+        motor_stanga.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         motor_stanga.setTargetPosition(0);
         motor_stanga.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         motor_stanga.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
+        motor_glisiere.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         motor_glisiere.setDirection(DcMotorSimple.Direction.REVERSE);
         motor_glisiere.setTargetPosition(0);
         motor_glisiere.setMode(DcMotor.RunMode.RUN_TO_POSITION);
