@@ -1,24 +1,18 @@
 package org.firstinspires.ftc.teamcode;
 
-import android.os.SystemClock;
-
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
 
-@TeleOp(name = "TeleOpCiupa9", group = "Robot")
+@TeleOp(name = "TeleOpCiupa91", group = "Robot")
 //@Disabled
-public class TeleOpCiupa9 extends LinearOpMode {
+public class TeleOpCiupa91 extends LinearOpMode {
 
     /* Declare OpMode members. */
     public DcMotor  fata_stanga   = null; //the left drivetrain motor
@@ -39,19 +33,19 @@ public class TeleOpCiupa9 extends LinearOpMode {
 
 
     final double ARM_COLLAPSED_INTO_ROBOT  = 0;
-    final double cosSusBrat = 105 * ARM_TICKS_PER_DEGREE;
+    final double cosSusBrat = 100 * ARM_TICKS_PER_DEGREE;
     final double cosJosBrat = 90 * ARM_TICKS_PER_DEGREE;
-    final double hang = 140 * ARM_TICKS_PER_DEGREE;
     final double SpecimenBrat = 90 * ARM_TICKS_PER_DEGREE;
-    final double intake = 25 * ARM_TICKS_PER_DEGREE;
-    final double clear = 35 * ARM_TICKS_PER_DEGREE;
+    final double Hang = 110 * ARM_TICKS_PER_DEGREE;
+    final double test = 10 * ARM_TICKS_PER_DEGREE;
+
     final double servoRetras = 0.4;
     final double servoTras = 0.7;
     final double cleste_score = 0.5;
 
     /* Variables to store the positions that the cleste should be set to when folding in, or folding out. */
-    final double cleste_inchis   = 0;
-    final double cleste_deschis  = 1;
+    final double cleste_deschis   = 1;
+    final double cleste_inchis  = 0;
 
 
     /* A number in degrees that the triggers can adjust the arm position by */
@@ -62,7 +56,6 @@ public class TeleOpCiupa9 extends LinearOpMode {
 
 
     double armPosition = (int)ARM_COLLAPSED_INTO_ROBOT;
-
     double armPositionFudgeFactor;
 
 
@@ -72,11 +65,11 @@ public class TeleOpCiupa9 extends LinearOpMode {
     final double LIFT_TICKS_PER_MM = 384.5 / 120.0; // Encoder ticks per mm for your specific motor and pulley setup
 
     final double LIFT_COLLAPSED = 0 * LIFT_TICKS_PER_MM;
-    final double LIFT_SCORING_IN_LOW_BASKET = 100 * LIFT_TICKS_PER_MM;
-    final double LIFT_SCORING_IN_HIGH_BASKET = 430 * LIFT_TICKS_PER_MM;
+    final double LIFT_SCORING_IN_LOW_BASKET = 0 * LIFT_TICKS_PER_MM;
+    final double LIFT_SCORING_IN_HIGH_BASKET = 348 * LIFT_TICKS_PER_MM;
     double liftPosition = LIFT_COLLAPSED;
 
-    final double LIFT_MAX_POSITION = (int) (450 * LIFT_TICKS_PER_MM); // Fully extended for 240mm slide
+    final double LIFT_MAX_POSITION = (int) (500 * LIFT_TICKS_PER_MM); // Fully extended for 240mm slide
 
 
     double cycletime = 0;
@@ -87,7 +80,7 @@ public class TeleOpCiupa9 extends LinearOpMode {
 
 
     @Override
-    public void runOpMode() throws InterruptedException {
+    public void runOpMode() {
 
         /* Define and Initialize Motors */
         fata_stanga   = hardwareMap.get(DcMotor.class, "fata_stanga"); //the arm motor
@@ -141,6 +134,9 @@ public class TeleOpCiupa9 extends LinearOpMode {
         //  servoRotire.setPower(rotirePosition);
 
 
+        cleste.setPosition(cleste_inchis);
+
+
         /* Send telemetry message to signify robot waiting */
         telemetry.addLine("Robot Ready.");
         telemetry.update();
@@ -184,31 +180,20 @@ public class TeleOpCiupa9 extends LinearOpMode {
                 servoRotire.setPosition(servoRetras);
             else if (gamepad2.y)
                 servoRotire.setPosition(servoTras);
-
             armPositionFudgeFactor = FUDGE_FACTOR * (gamepad2.right_trigger + (-gamepad2.left_trigger));
+
+
+
 
             if(gamepad2.dpad_up) {
                 armPosition = cosSusBrat;
-                liftPosition += LIFT_SCORING_IN_HIGH_BASKET * cycletime;
+                liftPosition = LIFT_SCORING_IN_HIGH_BASKET;
             }
             if(gamepad2.dpad_down) {
                 armPosition = cosJosBrat;
-                liftPosition = LIFT_SCORING_IN_LOW_BASKET * cycletime;
+                liftPosition = LIFT_SCORING_IN_LOW_BASKET;
             }
-            if (gamepad2.dpad_left) {
-                armPosition = intake;
-                liftPosition = LIFT_COLLAPSED;
-            }
-            if (gamepad2.right_stick_button)
-                armPosition = hang;
-            if(gamepad2.dpad_right) {
-                liftPosition = LIFT_COLLAPSED;
-                armPosition = ARM_COLLAPSED_INTO_ROBOT;
-            }
-            if (gamepad2.left_stick_button) {
-                armPosition = clear;
-                liftPosition = LIFT_COLLAPSED;
-            }
+
 
 // Apply lift compensation when arm is below 45 degrees
             if (armPosition < 45 * ARM_TICKS_PER_DEGREE) {
@@ -226,7 +211,7 @@ public class TeleOpCiupa9 extends LinearOpMode {
             motor_stanga.setTargetPosition((int) (armPosition + armPositionFudgeFactor + armLiftComp));
 
 // Set motor velocity (max speed)
-            ((DcMotorEx) motor_stanga).setVelocity(3800); // Maximum velocity
+            ((DcMotorEx) motor_stanga).setVelocity(2100); // Maximum velocity
             motor_stanga.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
 // Check for overcurrent condition and report via telemetry
@@ -237,9 +222,9 @@ public class TeleOpCiupa9 extends LinearOpMode {
 
 // Update lift position based on driver input
             if (gamepad2.right_bumper) {
-                liftPosition += 2000 * cycletime; // Increased for faster movement
+                liftPosition += 2500 * cycletime; // Increased for faster movement
             } else if (gamepad2.left_bumper) {
-                liftPosition -= 2000 * cycletime; // Increased for faster movement
+                liftPosition -= 2500 * cycletime; // Increased for faster movement
             }
 
 // Enforce limits
@@ -247,25 +232,18 @@ public class TeleOpCiupa9 extends LinearOpMode {
             if (liftPosition > LIFT_MAX_POSITION) {
                 liftPosition = LIFT_MAX_POSITION;
             }
-            else if (liftPosition < LIFT_COLLAPSED) {
+            if (liftPosition < LIFT_COLLAPSED) {
                 liftPosition = LIFT_COLLAPSED;
             }
 
 
-
-            // CEVA DIFERIT
-            if (gamepad2.a){
-                motor_stanga.setPower(gamepad2.left_stick_y);
-                motor_glisiere.setPower(gamepad2.left_stick_x);
-            }
-            // SPER CA MERGE :))))))))))))))))))))))))))))))))))))))))))))))))
 
 // Set motor mode and target position
             motor_glisiere.setMode(DcMotor.RunMode.RUN_TO_POSITION); // Ensure it's in the correct mode
             motor_glisiere.setTargetPosition((int) liftPosition);
 
 // Set motor velocity (ticks per second)
-            ((DcMotorEx) motor_glisiere).setVelocity(3200); // Adjust for desired speed
+            ((DcMotorEx) motor_glisiere).setVelocity(2800); // Adjust for desired speed
 
 
 
