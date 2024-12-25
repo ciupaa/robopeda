@@ -74,6 +74,7 @@ public class TeleOpCiupa9 extends LinearOpMode {
     final double LIFT_COLLAPSED = 0 * LIFT_TICKS_PER_MM;
     final double LIFT_SCORING_IN_LOW_BASKET = 100 * LIFT_TICKS_PER_MM;
     final double LIFT_SCORING_IN_HIGH_BASKET = 430 * LIFT_TICKS_PER_MM;
+    final double LIFT_LIMIT = 350 * LIFT_TICKS_PER_MM;
     double liftPosition = LIFT_COLLAPSED;
 
     final double LIFT_MAX_POSITION = (int) (450 * LIFT_TICKS_PER_MM); // Fully extended for 240mm slide
@@ -226,7 +227,7 @@ public class TeleOpCiupa9 extends LinearOpMode {
             motor_stanga.setTargetPosition((int) (armPosition + armPositionFudgeFactor + armLiftComp));
 
 // Set motor velocity (max speed)
-            ((DcMotorEx) motor_stanga).setVelocity(3800); // Maximum velocity
+            ((DcMotorEx) motor_stanga).setVelocity(4500); // Maximum velocity
             motor_stanga.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
 // Check for overcurrent condition and report via telemetry
@@ -244,6 +245,13 @@ public class TeleOpCiupa9 extends LinearOpMode {
 
 // Enforce limits
             // Enforce limits
+
+            while (armPosition < 45 * ARM_TICKS_PER_DEGREE) {
+                if ( liftPosition > LIFT_LIMIT) {
+                    liftPosition = LIFT_LIMIT;
+                }
+            }
+
             if (liftPosition > LIFT_MAX_POSITION) {
                 liftPosition = LIFT_MAX_POSITION;
             }
@@ -252,9 +260,8 @@ public class TeleOpCiupa9 extends LinearOpMode {
             }
 
 
-
             // CEVA DIFERIT
-            if (gamepad2.a){
+            while (gamepad2.a){
                 motor_stanga.setPower(gamepad2.left_stick_y);
                 motor_glisiere.setPower(gamepad2.left_stick_x);
             }
